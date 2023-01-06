@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Android Assignment</string>
+    <string name="logo_description">Logo Description</string>
+    <string name="sign_up_text">SIGN UP</string>
+    <string name="sign_up_content_description"><![CDATA[Create Probo Account]]></string>
+</resources>
