@@ -10,4 +10,5 @@
     <color name="primaryColor">#1da1f2</color>
     <color name="primaryTextColor">#000000</color>
     <color name="secondaryTextColor">#63625e</color>
+    <color name="snackBarErrorColor">#b30415</color>
 </resources>
