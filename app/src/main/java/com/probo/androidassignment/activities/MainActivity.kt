@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import com.bumptech.glide.Glide
 import com.probo.androidassignment.R
 import de.hdodenhof.circleimageview.CircleImageView
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val READ_STORAGE_PERMISSION_CODE = 1
         const val PICK_IMAGE_REQUEST_CODE = 2
+        const val SHARED_PREF_NAME = "myPreferences"
     }
 
     private var mSelectedImageFileUri: Uri? = null
@@ -36,6 +38,7 @@ class MainActivity : AppCompatActivity() {
 
         val btnLogOut = findViewById<AppCompatButton>(R.id.btn_log_out)
         btnLogOut.setOnClickListener {
+            getSharedPreferences(SHARED_PREF_NAME, MODE_PRIVATE).edit().clear().commit()
             startActivity(Intent(this@MainActivity, SignUpActivity::class.java))
         }
 
@@ -62,9 +65,21 @@ class MainActivity : AppCompatActivity() {
 
         val bundle = intent.extras
 
-        tvEmail.text = tvEmail.text.toString() + bundle?.getString("email")
-        tvDOB.text = tvDOB.text.toString() + bundle?.getString("dob")
-        tvPassword.text = tvPassword.text.toString() + bundle?.getString("password")
+        tvEmail.text = "Email : " + bundle?.getString("email")
+        tvDOB.text = "DOB : " + bundle?.getString("dob")
+        tvPassword.text = "Password : " + bundle?.getString("password")
+
+        mSelectedImageFileUri = bundle?.getString("imageURI")?.toUri()
+        if(mSelectedImageFileUri !=  null) {
+            placeImage()
+        }
+
+        val mySharedPreferences = getSharedPreferences(SHARED_PREF_NAME, MODE_PRIVATE)
+        val editor= mySharedPreferences.edit()
+        editor.putString("Email", bundle?.getString("email"))
+        editor.putString("DOB", bundle?.getString("dob"))
+        editor.putString("Password", bundle?.getString("password"))
+        editor.apply()
     }
 
     override fun onRequestPermissionsResult(
@@ -90,24 +105,31 @@ class MainActivity : AppCompatActivity() {
             requestCode== PICK_IMAGE_REQUEST_CODE &&
             data!!.data != null) {
             mSelectedImageFileUri = data.data!!
-
-            try {
-                val profileImage = findViewById<CircleImageView>(R.id.civ_profile_image)
-                Glide
-                    .with(this@MainActivity)
-                    .load(Uri.parse(mSelectedImageFileUri.toString()))
-                    .centerCrop()
-                    .placeholder(R.drawable.ic_baseline_person_24)
-                    .into(profileImage)
-            }
-            catch (exception: IOException) {
-                exception.printStackTrace()
-            }
+            placeImage()
+            val mySharedPreferences = getSharedPreferences(SHARED_PREF_NAME, MODE_PRIVATE)
+            val editor = mySharedPreferences.edit()
+            editor.putString("imageURI", mSelectedImageFileUri.toString())
+            editor.apply()
         }
     }
 
     private fun imageChooser(activity: MainActivity) {
         val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         activity.startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST_CODE)
+    }
+
+    private fun placeImage() {
+        try {
+            val profileImage = findViewById<CircleImageView>(R.id.civ_profile_image)
+            Glide
+                .with(this@MainActivity)
+                .load(Uri.parse(mSelectedImageFileUri.toString()))
+                .centerCrop()
+                .placeholder(R.drawable.ic_baseline_person_24)
+                .into(profileImage)
+        }
+        catch (exception: IOException) {
+            exception.printStackTrace()
+        }
     }
 }
